@@ -1,6 +1,12 @@
 <template>
   <div class="login-panel">
-    <div class="title-drag drag banSelect">YouChat</div>
+    <div class="title-drag drag">
+      <span class="title banSelect">YouChat</span>
+      <span class="iconfont icon-close close-icon no-drag" @click="close_window"></span>
+    </div>
+    <!-- <div v-if="shwoLoading" class="loading-panel">
+      <img src="../assets/img/loading.gif" />
+    </div> -->
     <div class="login-form">
       <el-form ref="formDataRef" :rules="rules" :model="form" label-width="0px" @submit.prevent>
         <el-form-item class="input-items" prop="email">
@@ -117,6 +123,9 @@ const changeOpType = () => {
     changeCheckCode()
   })
 }
+const close_window = () => {
+  window.ipcRenderer.send('closeWindow')
+}
 const shwoLoading = ref(false)
 const submit = async () => {
   //清空提示词
@@ -153,7 +162,7 @@ const submit = async () => {
   if (!checkValue(null, formData.value.checkCode, '请输入验证码')) {
     return
   }
-
+  shwoLoading.value = true
   let result = await proxy.Request({
     url: isLogin.value ? proxy.Api.login : proxy.Api.register,
     shwoError: false,
@@ -232,12 +241,24 @@ const cleanVerify = () => {
 }
 
 .title-drag {
-  margin-top: 3%;
+  padding-top: 3%;
   margin-left: 5%;
-  text-align: left;
+  margin-right: 4%;
+  // text-align: left;
   padding-bottom: 3%;
-  font-size: larger;
+  position: relative;
   margin-bottom: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  .title {
+    font-size: larger;
+  }
+  .close-icon {
+    z-index: 999;
+    cursor: pointer;
+    user-select: auto;
+  }
 }
 
 .input-items {
@@ -289,5 +310,16 @@ const cleanVerify = () => {
 }
 .banSelect {
   user-select: none;
+}
+.loading-panel {
+  height: calc(100vh - 32px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+  }
 }
 </style>

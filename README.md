@@ -1,4 +1,4 @@
-# easychat
+# YouChat
 
 An Electron application with Vue
 

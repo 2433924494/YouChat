@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { onLoginOrRegister, onLoginSuccess } from './ipc'
+import { onLoginOrRegister, onLoginSuccess, closeWindow } from './ipc'
 const NODE_ENV = process.env.NODE_ENV
 const login_height = 340
 const login_width = 300
@@ -11,6 +11,7 @@ const register_height = 460
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
+    maximizable: false,
     icon: icon,
     width: login_width,
     height: login_height,
@@ -56,8 +57,20 @@ function createWindow() {
     mainWindow.setResizable(false)
   })
   //监听登陆成功
-  onLoginSuccess((config)=>{
-    
+  onLoginSuccess((config) => {
+    mainWindow.setResizable(true)
+    mainWindow.setSize(850, 800)
+    // 居中显示
+    mainWindow.center()
+    // 可以最大化
+    mainWindow.setMaximizable(true)
+    // 设置最小窗口大小
+    mainWindow.setMinimumSize(800, 600)
+    if (config.admin) {
+    }
+  })
+  closeWindow(() => {
+    mainWindow.close()
   })
 }
 

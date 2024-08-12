@@ -12,4 +12,9 @@ const onLoginSuccess = (callback) => {
     callback(config)
   })
 }
-export { onLoginOrRegister, onLoginSuccess }
+const closeWindow = (callback) => {
+  ipcMain.on('closeWindow', (e) => {
+    callback()
+  })
+}
+export { onLoginOrRegister, onLoginSuccess, closeWindow }
