@@ -9,8 +9,9 @@ import '@/assets/icon/iconfont.css'
 import '@/assets/base.scss'
 import Verify from '@/utils/Verify.js'
 import Utils from '@/utils/Utils.js'
-import Request from '@/utils/Requests.js'
+import Request from '@/utils/Requests'
 import Message from '@/utils/Message.js'
+
 import Api from '@/utils/Api.js'
 const app = createApp(App)
 app.use(ElementPlus)

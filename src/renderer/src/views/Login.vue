@@ -105,6 +105,7 @@ import { ref, reactive, getCurrentInstance, nextTick } from 'vue'
 import md5 from 'js-md5'
 import { useUserInfoStore } from '../stores/UserinfoStore'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 const router = useRouter()
 const userInfoStore = useUserInfoStore()
 const { proxy } = getCurrentInstance()
@@ -220,14 +221,30 @@ const checkValue = (type, value, msg) => {
 }
 const checkCodeUrl = ref(null)
 const changeCheckCode = async () => {
-  let result = await proxy.Request({
-    url: proxy.Api.checkCode
-  })
-  if (!result) {
-    return
-  }
-  checkCodeUrl.value = result.data.checkCode
-  localStorage.setItem('checkCodeKey', result.data.checkCodeKey)
+  // let result = await proxy.Request({
+  //   url: proxy.Api.checkCode
+  // })
+  //TODO 抽象出函数
+  let result = null
+  axios({
+    method: 'POST',
+    url: '/api/account/checkCode',
+    baseURL: 'http://localhost:5000/',
+    data: {}
+  }).then(
+    (response) => {
+      console.log(response.data)
+      result = response.data
+      checkCodeUrl.value = result.data.checkCode
+      localStorage.setItem('checkCodeKey', result.data.checkCodeKey)
+    },
+    (error) => {
+      console.log('错误', error.message)
+    }
+  )
+  // if (!result) {
+  //   return
+  // }
 }
 changeCheckCode()
 const cleanVerify = () => {

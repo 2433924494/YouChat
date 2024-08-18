@@ -1,18 +1,15 @@
-import axios from 'axios'
 import { ElLoading } from 'element-plus'
+import axios from 'axios'
 import Message from '../utils/Message'
 import Api from '../utils/Api'
 const contentTypeForm = 'application/x-www-form-urlencoded;charset=UTF-8'
 const contentTypeJson = 'application/json'
 const responseTypeJson = 'json'
 let loading = null
-const instance = axios.create({
-  withCredentials: true,
-  baseURL: (import.meta.env.PROD ? Api.prodDomain : '') + '/api',
-  timeout: 10 * 1000
-})
-//请求前拦截器
-instance.interceptors.request.use(
+let baseURL = (import.meta.env.PROD ? Api.prodDomain : '') + '/api'
+axios.defaults.baseURL = baseURL
+
+axios.interceptors.request.use(
   (config) => {
     if (config.showLoading) {
       loading = ElLoading.service({
@@ -32,7 +29,7 @@ instance.interceptors.request.use(
   }
 )
 //请求后拦截器
-instance.interceptors.response.use(
+axios.interceptors.response.use(
   (response) => {
     const { showLoading, errorCallback, showError = true, responseType } = response.config
     if (showLoading && loading) {
@@ -68,7 +65,7 @@ instance.interceptors.response.use(
   }
 )
 
-const request = (config) => {
+const Request = (config) => {
   const {
     url,
     params,
@@ -92,20 +89,17 @@ const request = (config) => {
     token: token
   }
 
-  return instance
-    .post(url, formData, {
-      headers: headers,
-      showLoading: showLoading,
-      errorCallback: config.errorCallback,
-      showError: showError,
-      responseType: responseType
-    })
-    .catch((error) => {
-      if (error.showError) {
-        Message.error(error.msg)
-      }
-      return null
-    })
+  return axios({
+    method: 'POST',
+    url: config.url,
+    data: formData,
+    headers: headers
+  }).catch((error) => {
+    if (error.showError) {
+      Message.error(error.msg)
+    }
+    return null
+  })
 }
 
-export default request
+export default Request

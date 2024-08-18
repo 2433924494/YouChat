@@ -1,12 +1,12 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { onLoginOrRegister, onLoginSuccess, closeWindow } from './ipc'
 const NODE_ENV = process.env.NODE_ENV
-const login_height = 340
+const login_height = 330
 const login_width = 300
-const register_height = 460
+const register_height = 450
 
 function createWindow() {
   // Create the browser window.
@@ -66,6 +66,7 @@ function createWindow() {
     mainWindow.setMaximizable(true)
     // 设置最小窗口大小
     mainWindow.setMinimumSize(800, 600)
+    // TODO 管理后台,托盘操作
     if (config.admin) {
     }
   })
@@ -73,14 +74,28 @@ function createWindow() {
     mainWindow.close()
   })
 }
-
+let tray
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
-
+  //
+  const icon_path = join(__dirname, '../../resources/icon.ico')
+  const icon = nativeImage.createFromPath(icon_path)
+  // console.log(app.getAppPath())
+  // console.log(icon_path)
+  tray = new Tray(icon)
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Item1', type: 'radio' },
+    { label: 'Item2', type: 'radio' },
+    { label: 'Item3', type: 'radio', checked: true },
+    { label: 'Item4', type: 'radio' }
+  ])
+  tray.setContextMenu(contextMenu)
+  tray.setToolTip('YouChat')
+  tray.setTitle('YouChat')
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils

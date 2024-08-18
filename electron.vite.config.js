@@ -21,11 +21,12 @@ export default defineConfig({
       port: 5000,
       proxy: {
         '/api': {
-          target: 'http://localhost:5050',
+          target: 'http://192.168.0.100:5050',
           changeOrigin: true,
           pathRewrite: {
             '^api': '/api'
           }
+          // '/api': 'http://127.0.0.1:5050/api'
         }
       }
     }

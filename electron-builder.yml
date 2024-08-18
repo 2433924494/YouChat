@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: easychat
+productName: youchat
 directories:
   buildResources: build
 files:
@@ -11,7 +11,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: easychat
+  executableName: youchat
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
