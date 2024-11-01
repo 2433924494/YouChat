@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 import store from './store'
+// import { da } from 'element-plus/es/locales.mjs'
 const onLoginOrRegister = (callback) => {
   ipcMain.on('loginOrRegister', (e, isLogin) => {
     // console.log('Get render message:',isLogin)
@@ -21,4 +22,26 @@ const closeWindow = (callback) => {
     callback()
   })
 }
-export { onLoginOrRegister, onLoginSuccess, closeWindow }
+const minimizeWindow = (callback) => {
+  ipcMain.on('minimizeWindow', (e) => {
+    callback()
+  })
+}
+const maximizeWindow = (callback) => {
+  ipcMain.on('maximizeWindow', (e) => {
+    callback()
+  })
+}
+const winTitleOp = (callback) => {
+  ipcMain.on('winTitleOp', (e, data) => {
+    callback(e, data)
+  })
+}
+export {
+  onLoginOrRegister,
+  onLoginSuccess,
+  closeWindow,
+  minimizeWindow,
+  maximizeWindow,
+  winTitleOp
+}

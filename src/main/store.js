@@ -2,8 +2,17 @@ import Store from 'electron-store'
 
 const store = new Store()
 let userId = null
+let email = null
+
 const initUserId = (_userId) => {
   userId = _userId
+}
+const initEmail = (_email) => {
+  email = _email
+}
+
+const getEmail = () => {
+  return email
 }
 const getUserId = () => {
   return userId
@@ -30,6 +39,8 @@ export default {
   setData,
   getData,
   initUserId,
+  initEmail,
+  getEmail,
   getUserId,
   setUserData,
   getUserData,

@@ -7,6 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: '默认路径',
+      //暂时改成main方便调试
       redirect: '/login'
     },
     {
@@ -21,8 +22,31 @@ const router = createRouter({
       children: [
         {
           path: '/chat',
-          name: '聊天',
+          name: 'chat',
           component: () => import('@/views/chat/Chat.vue')
+        },
+        {
+          path: '/contact',
+          name: '联系人',
+          redirect: '/contact/blank',
+          component: () => import('@/views/contact/Contact.vue'),
+          children: [
+            {
+              path: '/contact/blank',
+              name: '空白页',
+              component: () => import('@/views/contact/BlankPage.vue')
+            },
+            {
+              path: '/contact/search',
+              name: '搜索',
+              component: () => import('@/views/contact/Search.vue')
+            }
+          ]
+        },
+        {
+          path: '/setting',
+          name: '设置',
+          component: () => import('@/views/setting/Setting.vue')
         }
       ]
     }

@@ -11,7 +11,9 @@ const config = reactive({
 
 <template>
   <el-config-provider :locale="zhCn" :message="config">
-    <router-view></router-view>
+    <transition name="fade" mode="out-in">
+      <router-view></router-view>
+    </transition>
   </el-config-provider>
 </template>
 

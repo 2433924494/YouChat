@@ -1,8 +1,17 @@
 import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
+import Store from 'electron-store'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { onLoginOrRegister, onLoginSuccess, closeWindow } from './ipc'
+import {
+  onLoginOrRegister,
+  onLoginSuccess,
+  closeWindow,
+  minimizeWindow,
+  winTitleOp,
+  maximizeWindow
+} from './ipc'
+// import { tr } from 'element-plus/es/locales.mjs'
 const NODE_ENV = process.env.NODE_ENV
 const login_height = 330
 const login_width = 300
@@ -10,6 +19,7 @@ const register_height = 450
 
 function createWindow() {
   // Create the browser window.
+
   const mainWindow = new BrowserWindow({
     maximizable: false,
     icon: icon,
@@ -46,6 +56,27 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+  // 托盘
+  const tray = new Tray(icon)
+  var contextMenu = [
+    { label: 'Item1', type: 'radio' },
+    { label: 'Item2', type: 'radio' },
+    { label: 'Item3', type: 'radio', checked: true },
+    {
+      label: 'Exit',
+      click: () => {
+        app.exit()
+      }
+    }
+  ]
+  const menu = Menu.buildFromTemplate(contextMenu)
+  tray.setContextMenu(menu)
+  tray.setToolTip('YouChat')
+  tray.setTitle('YouChat')
+  tray.on('click', () => {
+    mainWindow.setSkipTaskbar(false)
+    mainWindow.show()
+  })
   //监听登陆注册
   onLoginOrRegister((isLogin) => {
     mainWindow.setResizable(true)
@@ -58,8 +89,9 @@ function createWindow() {
   })
   //监听登陆成功
   onLoginSuccess((config) => {
+    mainWindow.setOpacity(0)
     mainWindow.setResizable(true)
-    mainWindow.setSize(850, 800)
+    mainWindow.setSize(960, 640)
     // 居中显示
     mainWindow.center()
     // 可以最大化
@@ -69,33 +101,75 @@ function createWindow() {
     // TODO 管理后台,托盘操作
     if (config.admin) {
     }
+    contextMenu.unshift({
+      label: 'User:' + config.nickName,
+      click: () => {}
+    })
+    setTimeout(() => {
+      mainWindow.setOpacity(1)
+      mainWindow.show()
+      mainWindow.focus()
+    }, 500)
   })
   closeWindow(() => {
     mainWindow.close()
   })
+  minimizeWindow(() => {
+    mainWindow.minimize()
+  })
+  maximizeWindow(() => {
+    mainWindow.maximize()
+  })
+  winTitleOp((e, [action, data]) => {
+    const webContents = e.sender
+    const win = BrowserWindow.fromWebContents(webContents)
+    switch (action) {
+      case 'close': {
+        // 0:直接关闭 1:隐藏关闭
+        if (data.closeType == 0) {
+          win.close()
+        } else {
+          win.setSkipTaskbar(true)
+          win.hide()
+        }
+        break
+      }
+      case 'minimize': {
+        win.minimize()
+        break
+      }
+      case 'maximize': {
+        win.maximize()
+        break
+      }
+      case 'unmaximize': {
+        win.unmaximize()
+        break
+      }
+      case 'top': {
+        // console.log(data)
+        if (data) {
+          win.setAlwaysOnTop(true)
+        } else {
+          win.setAlwaysOnTop(false)
+        }
+        break
+      }
+      default:
+        break
+    }
+  })
 }
-let tray
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
+  // Store.initRenderer()
   //
-  const icon_path = join(__dirname, '../../resources/icon.ico')
-  const icon = nativeImage.createFromPath(icon_path)
-  // console.log(app.getAppPath())
-  // console.log(icon_path)
-  tray = new Tray(icon)
-  const contextMenu = Menu.buildFromTemplate([
-    { label: 'Item1', type: 'radio' },
-    { label: 'Item2', type: 'radio' },
-    { label: 'Item3', type: 'radio', checked: true },
-    { label: 'Item4', type: 'radio' }
-  ])
-  tray.setContextMenu(contextMenu)
-  tray.setToolTip('YouChat')
-  tray.setTitle('YouChat')
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils

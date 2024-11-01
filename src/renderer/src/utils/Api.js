@@ -1,6 +1,6 @@
 const api = {
   prodDomain: 'http://localhost:5050',
-  devDomain: 'http://127.0.0.1:5050',
+  devDomain: 'http://xg-3.frp.one:57316',
   prodWsDomain: 'ws:/127.0.0.1:5051/ws',
   devWsDomain: 'ws:/127.0.0.1:5051/ws',
   checkCode: '/account/checkCode', //验证码

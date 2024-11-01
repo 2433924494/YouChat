@@ -2,7 +2,10 @@
   <div class="login-panel">
     <div class="title-drag drag">
       <span class="title banSelect">YouChat</span>
-      <span class="iconfont icon-close close-icon no-drag" @click="close_window"></span>
+      <div class="top-btns">
+        <span class="iconfont icon-min no-drag min-icon" @click="minimize_window"></span>
+        <span class="iconfont icon-close close-icon no-drag" @click="close_window"></span>
+      </div>
     </div>
     <!-- <div v-if="shwoLoading" class="loading-panel">
       <img src="../assets/img/loading.gif" />
@@ -83,6 +86,9 @@
 
         <div class="errorMsg banSelect">{{ errorMsg }}</div>
         <el-form-item label="">
+          <div v-if="isLogin" class="remember">
+            <el-checkbox v-model="checkRemember" @click="changeRemember">记住账户</el-checkbox>
+          </div>
           <div class="buttom-link">
             <span class="a-link banSelect" @click="changeOpType">{{
               isLogin ? '没有账号?' : '已有账号?'
@@ -106,6 +112,10 @@ import md5 from 'js-md5'
 import { useUserInfoStore } from '../stores/UserinfoStore'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+
+import { ElLoading } from 'element-plus'
+
+const checkRemember = ref(false)
 const router = useRouter()
 const userInfoStore = useUserInfoStore()
 const { proxy } = getCurrentInstance()
@@ -114,6 +124,15 @@ const formDataRef = ref()
 const rules = {}
 const errorMsg = ref(null)
 const isLogin = ref(true)
+
+// const autoInputLogin = () => {
+//   if (localStorage.getItem('rememberStatu')) {
+//     formData.value.email = localStorage.getItem('account')
+//     formData.value.password = localStorage.getItem('password')
+//     checkRemember.value = true
+//   }
+// }
+// autoInputLogin()
 const changeOpType = () => {
   isLogin.value = !isLogin.value
   window.ipcRenderer.send('loginOrRegister', isLogin.value)
@@ -126,6 +145,9 @@ const changeOpType = () => {
 }
 const close_window = () => {
   window.ipcRenderer.send('closeWindow')
+}
+const minimize_window = () => {
+  window.ipcRenderer.send('minimizeWindow')
 }
 const shwoLoading = ref(false)
 const submit = async () => {
@@ -203,7 +225,9 @@ const submit = async () => {
     })
   } else {
     proxy.Message.success('注册成功')
+    localStorage.setItem('email', formData.value.email)
     changeOpType()
+    formData.value.email = localStorage.getItem('email')
   }
 }
 
@@ -226,20 +250,41 @@ const changeCheckCode = async () => {
   // })
   //TODO 抽象出函数
   let result = null
+  let loading = null
+  loading = ElLoading.service({
+    lock: true,
+    text: '加载中......',
+    background: 'rgba(0, 0, 0, 0.7)'
+  })
   axios({
     method: 'POST',
     url: '/api/account/checkCode',
-    baseURL: 'http://localhost:5000/',
+    // baseURL: 'http://xg-3.frp.one:57316/',
     data: {}
   }).then(
     (response) => {
-      console.log(response.data)
+      // console.log(response.data)
       result = response.data
-      checkCodeUrl.value = result.data.checkCode
-      localStorage.setItem('checkCodeKey', result.data.checkCodeKey)
+      if (loading) {
+        loading.close()
+      }
+      if (result.code == 200) {
+        checkCodeUrl.value = result.data.checkCode
+        localStorage.setItem('checkCodeKey', result.data.checkCodeKey)
+      } else if (result.code == 901) {
+        //登录超时
+        setTimeout(() => {
+          window.ipcRenderer.send('reLogin')
+        }, 2000)
+        return Promise.reject({ showError: true, msg: '登录超时' })
+      }
     },
     (error) => {
       console.log('错误', error.message)
+      if (loading) {
+        loading.close()
+      }
+      proxy.Message.error('请求发送失败')
     }
   )
   // if (!result) {
@@ -265,16 +310,47 @@ const cleanVerify = () => {
   padding-bottom: 3%;
   position: relative;
   margin-bottom: 0;
+  margin-right: 0%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   .title {
     font-size: larger;
   }
-  .close-icon {
-    z-index: 999;
-    cursor: pointer;
-    user-select: auto;
+  .top-btns {
+    position: absolute;
+    top: 0%;
+    right: 0%;
+    display: flex;
+    .iconfont {
+      font-size: 12px;
+    }
+    .close-icon {
+      cursor: pointer;
+      user-select: auto;
+      height: 30px;
+      width: 30px;
+      border-radius: 0px 0px 0px 5px;
+      &:hover {
+        background-color: #d63223;
+        color: white;
+      }
+    }
+    .min-icon {
+      cursor: pointer;
+      user-select: auto;
+      height: 30px;
+      width: 30px;
+      border-radius: 0px 0px 5px 5px;
+      &:hover {
+        background-color: #e9e9e9;
+      }
+    }
+  }
+  .iconfont {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -290,8 +366,13 @@ const cleanVerify = () => {
   padding: 8 auto;
   font-size: medium;
 }
-
+.remember {
+  position: absolute;
+  left: 0%;
+  margin-left: 30px;
+}
 .buttom-link {
+  // display: flex;
   position: absolute;
   right: 0%;
   margin: 3% 10%;
